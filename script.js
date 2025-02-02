@@ -2,10 +2,24 @@ document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("appointment-form");
     const appointmentList = document.getElementById("appointment-list");
 
-    let appointments = JSON.parse(localStorage.getItem("appointments")) || [];
+    let appointments = getFromLocalStorage() || [];
 
     function saveToLocalStorage() {
-        localStorage.setItem("appointments", JSON.stringify(appointments));
+        try {
+            localStorage.setItem("appointments", JSON.stringify(appointments));
+        } catch (error) {
+            console.error("❌ Error saving to localStorage:", error);
+        }
+    }
+
+    function getFromLocalStorage() {
+        try {
+            const data = localStorage.getItem("appointments");
+            return data ? JSON.parse(data) : [];
+        } catch (error) {
+            console.error("❌ Error reading from localStorage:", error);
+            return [];
+        }
     }
 
     function renderAppointments() {
@@ -67,10 +81,20 @@ document.addEventListener("DOMContentLoaded", function () {
     form.addEventListener("submit", function (event) {
         event.preventDefault();
 
-        const title = document.getElementById("title").value;
+        const title = document.getElementById("title").value.trim();
         const date = document.getElementById("date").value;
         const startTime = document.getElementById("startTime").value;
         const endTime = document.getElementById("endTime").value;
+
+        if (!title || !date || !startTime || !endTime) {
+            alert("❌ กรุณากรอกข้อมูลให้ครบทุกช่อง!");
+            return;
+        }
+
+        if (startTime >= endTime) {
+            alert("❌ เวลาสิ้นสุดต้องมากกว่าเวลาเริ่มต้น!");
+            return;
+        }
 
         const newAppointment = {
             id: Date.now().toString(),
